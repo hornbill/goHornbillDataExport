@@ -1,0 +1,32 @@
+{
+    "APIKey": "yourapikey",
+    "InstanceID": "yourinstanceid",
+    "Database":{
+        "Driver": "mysql",
+        "Server": "127.0.0.1",
+        "Database": "hornbillbackup",
+        "Authentication": "",
+        "UserName": "root",
+        "Password": "",
+        "Port": 5002,
+        "Encrypt": false
+    },
+    "Reports":[
+        {
+            "ReportID":0,
+            "ReportName":"",
+            "DeleteReportInstance": true,
+            "DeleteReportLocalFile": true,
+            "Table":{
+                "TableName":"h_itsm_requests",
+                "PrimaryKey":"h_pk_reference",
+                "Mapping":{
+                    "RequestID":"h_pk_reference",
+                    "DateLogged":"h_datelogged",
+                    "LastUpdate":"h_datelastmodified",
+                    "Summary":"h_summary"
+                }
+            }
+        }
+    ]
+}
