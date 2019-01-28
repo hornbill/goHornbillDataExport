@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -38,7 +39,10 @@ func buildConnectionString() string {
 			connectString = connectString + ";port=" + dbPortSetting
 		}
 	case "mysql":
-		connectString = apiCallConfig.Database.UserName + ":" + apiCallConfig.Database.Password
+		connectString = apiCallConfig.Database.UserName
+		if apiCallConfig.Database.Password != "" {
+			connectString += ":" + apiCallConfig.Database.Password
+		}
 		connectString = connectString + "@tcp(" + apiCallConfig.Database.Server + ":"
 		if apiCallConfig.Database.Port != 0 {
 			dbPortSetting := strconv.Itoa(apiCallConfig.Database.Port)
@@ -60,17 +64,17 @@ func buildMySQLQuery(reportRecord map[string]string, report reportStruct) (strin
 	namedData := make(map[string]interface{})
 
 	for repCol, dbCol := range report.Table.Mapping {
-		if strColumns != "" {
-			strColumns += ", "
-		}
-		if strValues != "" {
-			strValues += ", "
-		}
-		if strOnDupe != "" {
-			strOnDupe += ", "
-		}
-
 		if reportRecord[repCol] != "" {
+			if strColumns != "" {
+				strColumns += ", "
+			}
+			if strValues != "" {
+				strValues += ", "
+			}
+			if strOnDupe != "" {
+				strOnDupe += ", "
+			}
+
 			strColumns += dbCol
 			strValues += ":" + dbCol
 			namedData[dbCol] = reportRecord[repCol]
@@ -91,14 +95,14 @@ func buildMSSQLInsert(reportRecord map[string]string, report reportStruct) (stri
 	namedData := make(map[string]interface{})
 
 	for repCol, dbCol := range report.Table.Mapping {
-		if strColumns != "" {
-			strColumns += ", "
-		}
-		if strValues != "" {
-			strValues += ", "
-		}
-
 		if reportRecord[repCol] != "" {
+			if strColumns != "" {
+				strColumns += ", "
+			}
+			if strValues != "" {
+				strValues += ", "
+			}
+
 			strColumns += dbCol
 			strValues += ":" + dbCol
 			namedData[dbCol] = reportRecord[repCol]
@@ -116,11 +120,11 @@ func buildMSSQLUpdate(reportRecord map[string]string, report reportStruct) (stri
 	namedData := make(map[string]interface{})
 
 	for repCol, dbCol := range report.Table.Mapping {
-		if strOnDupe != "" {
-			strOnDupe += ", "
-		}
-
 		if reportRecord[repCol] != "" {
+			if strOnDupe != "" {
+				strOnDupe += ", "
+			}
+
 			namedData[dbCol] = reportRecord[repCol]
 			strOnDupe += dbCol + " = :" + dbCol
 		}
@@ -187,6 +191,16 @@ func upsertRecord(reportRecord map[string]string, report reportStruct, counters 
 		sqlQuery, namedData = buildMySQLQuery(reportRecord, report)
 	}
 
+	if len(namedData) == 0 {
+		counters.failed++
+		hornbillHelpers.Logger(4, "Unable to map any values from the returned record:", false, logFile)
+		jsonRecord, _ := json.Marshal(reportRecord)
+		hornbillHelpers.Logger(3, "[RECORD] "+fmt.Sprintf("%s", jsonRecord), false, logFile)
+		jsonMapping, _ := json.Marshal(report.Table.Mapping)
+		hornbillHelpers.Logger(3, "[MAPPINGS] "+string(jsonMapping), false, logFile)
+
+		return
+	}
 	if configDebug {
 		//Add query & params to log
 		hornbillHelpers.Logger(3, "[DATABASE] Query:"+sqlQuery, false, logFile)
@@ -213,7 +227,7 @@ func upsertRecord(reportRecord map[string]string, report reportStruct, counters 
 
 	results, err := db.NamedExec(sqlQuery, namedData)
 	if err != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Named Exec Error: "+fmt.Sprintf("%v", err), true, logFile)
+		hornbillHelpers.Logger(4, " [DATABASE] NamedExec Error: "+fmt.Sprintf("%v", err), true, logFile)
 		counters.failed++
 		return
 	}

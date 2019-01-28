@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -181,7 +182,14 @@ func getReportContent(reportOutput paramsReportStruct, espXmlmc *apiLib.XmlmcIns
 						hornbillHelpers.Logger(3, " * Total Records Found: "+strconv.Itoa(totalRecords), true, logFile)
 						hornbillHelpers.Logger(3, " * Rows Affected: "+strconv.Itoa(counters.rowsaffected), true, logFile)
 						hornbillHelpers.Logger(3, " * Successful Queries: "+strconv.Itoa(counters.success), true, logFile)
-						hornbillHelpers.Logger(3, " * Failed Queries: "+strconv.Itoa(counters.failed), true, logFile)
+
+						failedQueryOutput := " * Failed Queries: " + strconv.Itoa(counters.failed)
+						if counters.failed > 0 {
+							hornbillHelpers.Logger(3, failedQueryOutput, false, logFile)
+							color.Red(failedQueryOutput)
+						} else {
+							hornbillHelpers.Logger(3, failedQueryOutput, true, logFile)
+						}
 					}
 				}
 				if report.DeleteReportLocalFile {
@@ -197,7 +205,7 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 	hornbillHelpers.Logger(3, "Retrieving "+strings.ToUpper(file.Type)+" Report File "+file.Name+"...", true, logFile)
 
 	cwd, _ := os.Getwd()
-	reportsFolder := cwd + "/reports/"
+	reportsFolder := path.Join(cwd, "reports")
 	//-- If reports folder doesn't dxist then create it
 	if _, err := os.Stat(reportsFolder); os.IsNotExist(err) {
 		err := os.Mkdir(reportsFolder, 0777)
@@ -208,7 +216,7 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 	}
 
 	//Create file for data dump
-	reportPath := reportsFolder + file.Name
+	reportPath := path.Join(reportsFolder, file.Name)
 	out, err := os.Create(reportPath)
 	if err != nil {
 		hornbillHelpers.Logger(4, "CSV File Creation Failed: "+fmt.Sprintf("%v", err), true, logFile)
@@ -286,7 +294,7 @@ func loadConfig() (apiCallStruct, bool) {
 	boolLoadConf := true
 	//-- Check Config File File Exists
 	cwd, _ := os.Getwd()
-	configurationFilePath := cwd + "/" + configFileName
+	configurationFilePath := path.Join(cwd, configFileName)
 	hornbillHelpers.Logger(1, "Loading Config File: "+configurationFilePath, false, logFile)
 	if _, fileCheckErr := os.Stat(configurationFilePath); os.IsNotExist(fileCheckErr) {
 		hornbillHelpers.Logger(4, "No Configuration File", true, logFile)
