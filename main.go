@@ -15,13 +15,13 @@ import (
 	"time"
 
 	"github.com/hornbill/color"
-	"github.com/hornbill/goApiLib"
-	"github.com/hornbill/goHornbillHelpers"
+	apiLib "github.com/hornbill/goApiLib"
+	hornbillHelpers "github.com/hornbill/goHornbillHelpers"
 	"github.com/hornbill/pb"
 
 	//SQL Drivers
-	_ "github.com/hornbill/go-mssqldb" //Microsoft SQL Server driver - v2005+
-	_ "github.com/hornbill/mysql"      //MySQL v4.1 to v5.x and MariaDB driver
+	_ "github.com/denisenkom/go-mssqldb" //Microsoft SQL Server driver - v2005+
+	_ "github.com/go-sql-driver/mysql"   //MySQL v4.1 to v8.x and MariaDB driver
 )
 
 func main() {
@@ -29,7 +29,14 @@ func main() {
 	logFile = "dataexport_" + time.Now().Format("20060102150405") + ".log"
 	flag.StringVar(&configFileName, "file", "conf.json", "Name of the configuration file to load")
 	flag.BoolVar(&configDebug, "debug", false, "Debug mode - additional logging")
+	flag.BoolVar(&configVersion, "version", false, "Return version and end")
 	flag.Parse()
+
+	//-- If configVersion just output version number and die
+	if configVersion {
+		fmt.Printf("%v \n", version)
+		return
+	}
 
 	hornbillHelpers.Logger(3, "---- "+toolName+" v"+version+" ----", true, logFile)
 	hornbillHelpers.Logger(3, "Flag - Configuration File: "+configFileName, true, logFile)

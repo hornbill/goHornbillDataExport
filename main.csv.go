@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/hornbill/goHornbillHelpers"
+	hornbillHelpers "github.com/hornbill/goHornbillHelpers"
 )
 
 func getRecordsFromCSV(csvFile string) (bool, []map[string]string) {

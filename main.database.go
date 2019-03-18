@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
-	"github.com/hornbill/goHornbillHelpers"
-	"github.com/hornbill/sqlx"
+	hornbillHelpers "github.com/hornbill/goHornbillHelpers"
+	"github.com/jmoiron/sqlx"
 )
 
 //buildConnectionString -- Build the connection string for the SQL driver
@@ -76,9 +77,11 @@ func buildMySQLQuery(reportRecord map[string]string, report reportStruct) (strin
 			}
 
 			strColumns += dbCol
-			strValues += ":" + dbCol
-			namedData[dbCol] = reportRecord[repCol]
-			strOnDupe += dbCol + " = :" + dbCol
+			//remove spaces and `` from column name so NamedExec can map values
+			strProcessedColumn := processColumnName(dbCol)
+			strValues += ":" + strProcessedColumn
+			namedData[strProcessedColumn] = reportRecord[repCol]
+			strOnDupe += dbCol + " = :" + strProcessedColumn
 		}
 
 	}
@@ -104,8 +107,10 @@ func buildMSSQLInsert(reportRecord map[string]string, report reportStruct) (stri
 			}
 
 			strColumns += dbCol
-			strValues += ":" + dbCol
-			namedData[dbCol] = reportRecord[repCol]
+			//remove spaces and [] from column name so NamedExec can map values
+			strProcessedColumn := processColumnName(dbCol)
+			strValues += ":" + strProcessedColumn
+			namedData[strProcessedColumn] = reportRecord[repCol]
 		}
 
 	}
@@ -124,15 +129,25 @@ func buildMSSQLUpdate(reportRecord map[string]string, report reportStruct) (stri
 			if strOnDupe != "" {
 				strOnDupe += ", "
 			}
-
-			namedData[dbCol] = reportRecord[repCol]
-			strOnDupe += dbCol + " = :" + dbCol
+			//remove spaces and [] from column name so NamedExec can map values
+			strProcessedColumn := processColumnName(dbCol)
+			namedData[strProcessedColumn] = reportRecord[repCol]
+			strOnDupe += dbCol + " = :" + strProcessedColumn
 		}
 
 	}
-
-	strQuery = "UPDATE " + report.Table.TableName + " SET " + strOnDupe + " WHERE " + report.Table.PrimaryKey + " = :" + report.Table.PrimaryKey
+	strProcessedKey := processColumnName(report.Table.PrimaryKey)
+	strQuery = "UPDATE " + report.Table.TableName + " SET " + strOnDupe + " WHERE " + report.Table.PrimaryKey + " = :" + strProcessedKey
 	return strQuery, namedData
+}
+
+func processColumnName(columnName string) string {
+	strTrimmer := strings.TrimLeft(columnName, "[")
+	strTrimmer = strings.TrimRight(strTrimmer, "]")
+	strTrimmer = strings.TrimLeft(strTrimmer, "`")
+	strTrimmer = strings.TrimRight(strTrimmer, "`")
+	arrTrimmer := strings.Split(strTrimmer, " ")
+	return strings.Join(arrTrimmer[:], "")
 }
 
 func doesRecordExist(reportRecord map[string]string, report reportStruct) bool {
@@ -166,10 +181,7 @@ func doesRecordExist(reportRecord map[string]string, report reportStruct) bool {
 	stmt, _ := db.Preparex(sqlQuery)
 	var id string
 	err := stmt.Get(&id, pkVal)
-	if err == nil {
-		return true
-	}
-	return false
+	return (err == nil)
 }
 
 //upsertRecord -- Query Asset Database for assets of current type

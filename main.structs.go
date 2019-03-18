@@ -1,11 +1,9 @@
 package main
 
-import (
-	"github.com/hornbill/goApiLib"
-)
+import apiLib "github.com/hornbill/goApiLib"
 
 const (
-	version  = "1.1.0"
+	version  = "1.2.0"
 	toolName = "Hornbill Data Export Tool"
 )
 
@@ -14,6 +12,7 @@ var (
 	boolConfLoaded bool
 	configDebug    bool
 	configFileName string
+	configVersion  bool
 	connString     string
 	davEndpoint    string
 	espXmlmc       *apiLib.XmlmcInstStruct

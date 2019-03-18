@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.2.0 (18th March, 2019)
+
+Features:
+
+- Added support for MySQL 8.x
+- Added support for writing to database columns whose names contain spaces
+- Added version support for cross-compiling script
+
 ## 1.1.0 (28th January, 2019)
 
 Feature:
