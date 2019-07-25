@@ -28,6 +28,7 @@ func main() {
 	timeNow = time.Now().Format("2006-01-02 15:04:05")
 	logFile = "dataexport_" + time.Now().Format("20060102150405") + ".log"
 	flag.StringVar(&configFileName, "file", "conf.json", "Name of the configuration file to load")
+	flag.IntVar(&configTimeout, "timeout", 30, "The number of seconds to allow the CSV retrieval to wait before timing out")
 	flag.BoolVar(&configDebug, "debug", false, "Debug mode - additional logging")
 	flag.BoolVar(&configVersion, "version", false, "Return version and end")
 	flag.Parse()
@@ -240,7 +241,7 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 		hornbillHelpers.Logger(4, fmt.Sprintf("%v", err), true, logFile)
 		return ""
 	}
-	duration := time.Second * time.Duration(30)
+	duration := time.Second * time.Duration(configTimeout)
 	client := &http.Client{Timeout: duration}
 
 	resp, err := client.Do(req)

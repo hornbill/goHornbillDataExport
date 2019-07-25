@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.3.0 (25th July, 2019)
+
+Features:
+
+- Added ability to define http connection timeout, for when retrieving large reports back from Hornbill
+
 ## 1.2.0 (18th March, 2019)
 
 Features:

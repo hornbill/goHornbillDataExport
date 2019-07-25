@@ -3,7 +3,7 @@ package main
 import apiLib "github.com/hornbill/goApiLib"
 
 const (
-	version  = "1.2.0"
+	version  = "1.3.0"
 	toolName = "Hornbill Data Export Tool"
 )
 
@@ -13,6 +13,7 @@ var (
 	configDebug    bool
 	configFileName string
 	configVersion  bool
+	configTimeout  int
 	connString     string
 	davEndpoint    string
 	espXmlmc       *apiLib.XmlmcInstStruct
