@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.4.0 (5th August, 2019)
+
+Features:
+
+- Added current download process to CLI output
+- Updated client transport and dialler to support download of large reports
+
 ## 1.3.0 (25th July, 2019)
 
 Features:

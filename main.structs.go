@@ -3,7 +3,7 @@ package main
 import apiLib "github.com/hornbill/goApiLib"
 
 const (
-	version  = "1.3.0"
+	version  = "1.4.0"
 	toolName = "Hornbill Data Export Tool"
 )
 
@@ -90,4 +90,10 @@ type reportRunStruct struct {
 type reportFileStruct struct {
 	Name string `xml:"name"`
 	Type string `xml:"type"`
+}
+
+//WriteCounter - Stores many bytes have been downloaded from the report on the instance
+type WriteCounter struct {
+	Total    uint64
+	FileName string
 }

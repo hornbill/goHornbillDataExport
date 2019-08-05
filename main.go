@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"path"
@@ -14,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/hornbill/color"
 	apiLib "github.com/hornbill/goApiLib"
 	hornbillHelpers "github.com/hornbill/goHornbillHelpers"
@@ -231,22 +233,35 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 		return ""
 	}
 	defer out.Close()
-	reportURL := davEndpoint + "reports/" + strconv.Itoa(reportRun.ReportID) + "/" + reportRun.CSVLink
 
-	req, _ := http.NewRequest("GET", reportURL, nil)
-	req.Header.Set("Content-Type", "text/xmlmc")
+	reportURL := davEndpoint + "reports/" + strconv.Itoa(reportRun.ReportID) + "/" + reportRun.CSVLink
+	hornbillHelpers.Logger(3, "Report File URL: "+reportURL, false, logFile)
+
+	req, err := http.NewRequest("GET", reportURL, nil)
+	req.Header.Set("Content-Type", "text/csv; charset=utf-8")
 	req.Header.Set("Authorization", "ESP-APIKEY "+apiCallConfig.APIKey)
+	req.Header.Set("User-Agent", "Go-http-client/1.1")
 
 	if err != nil {
-		hornbillHelpers.Logger(4, fmt.Sprintf("%v", err), true, logFile)
+		hornbillHelpers.Logger(4, "httpNewRequest Error: "+fmt.Sprintf("%v", err), true, logFile)
 		return ""
 	}
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 10 * time.Second,
+		}).Dial,
+		TLSHandshakeTimeout: 5 * time.Second,
+	}
+
 	duration := time.Second * time.Duration(configTimeout)
-	client := &http.Client{Timeout: duration}
+	client := &http.Client{
+		Timeout:   duration,
+		Transport: netTransport,
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		hornbillHelpers.Logger(4, fmt.Sprintf("%v", err), true, logFile)
+		hornbillHelpers.Logger(4, "client.Do Error: "+fmt.Sprintf("%v", err), true, logFile)
 		return ""
 	}
 	defer resp.Body.Close()
@@ -257,11 +272,16 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 		io.Copy(ioutil.Discard, resp.Body)
 		return ""
 	}
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		hornbillHelpers.Logger(4, fmt.Sprintf("%v", err), true, logFile)
+
+	// Create progress reporter, and pass it to be used with writer
+	counter := &WriteCounter{FileName: file.Name}
+	_, errCopy := io.Copy(out, io.TeeReader(resp.Body, counter))
+	if errCopy != nil {
+		hornbillHelpers.Logger(4, "io.Copy Error: "+fmt.Sprintf("%v", errCopy), true, logFile)
 		return ""
 	}
+	fmt.Print("\n")
+
 	hornbillHelpers.Logger(3, "Retrieved report data from "+reportPath, false, logFile)
 	return reportPath
 }
@@ -329,4 +349,20 @@ func loadConfig() (apiCallStruct, bool) {
 	}
 	//-- Return New Config
 	return edbConf, boolLoadConf
+}
+
+// Write - writes the length of bytes downloaded from the report
+func (wc *WriteCounter) Write(p []byte) (int, error) {
+	n := len(p)
+	wc.Total += uint64(n)
+	wc.PrintProgress()
+	return n, nil
+}
+
+// PrintProgress - outputs the current download progress to screen
+func (wc WriteCounter) PrintProgress() {
+	// Clear the line by using a character return to go back to the start and remove the remaining characters by filling it with spaces
+	fmt.Printf("\r%s", strings.Repeat(" ", 35))
+	// Return again and print current status of download
+	fmt.Printf("\rDownloading %s... %s complete", wc.FileName, humanize.Bytes(wc.Total))
 }
