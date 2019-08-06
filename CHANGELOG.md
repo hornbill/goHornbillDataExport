@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.4.1 (6th August, 2019)
+
+Changes:
+
+- Applied custom timeout value to dialler as well as client
+
 ## 1.4.0 (5th August, 2019)
 
 Features:

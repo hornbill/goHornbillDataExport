@@ -246,14 +246,16 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 		hornbillHelpers.Logger(4, "httpNewRequest Error: "+fmt.Sprintf("%v", err), true, logFile)
 		return ""
 	}
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: 10 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout: 5 * time.Second,
-	}
 
 	duration := time.Second * time.Duration(configTimeout)
+
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: duration,
+		}).Dial,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+
 	client := &http.Client{
 		Timeout:   duration,
 		Transport: netTransport,
