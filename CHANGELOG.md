@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.5.0 (2nd September, 2019)
+
+Changes:
+
+- Added the ability to skip inserts/updates of report records into database
+
 ## 1.4.1 (6th August, 2019)
 
 Changes:

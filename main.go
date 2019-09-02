@@ -33,6 +33,7 @@ func main() {
 	flag.IntVar(&configTimeout, "timeout", 30, "The number of seconds to allow the CSV retrieval to wait before timing out")
 	flag.BoolVar(&configDebug, "debug", false, "Debug mode - additional logging")
 	flag.BoolVar(&configVersion, "version", false, "Return version and end")
+	flag.BoolVar(&configSkipInsert, "skipdb", false, "Set to true to skip the insert/update of report records into the database")
 	flag.Parse()
 
 	//-- If configVersion just output version number and die
@@ -58,20 +59,22 @@ func main() {
 	espXmlmc.SetAPIKey(apiCallConfig.APIKey)
 	davEndpoint = apiLib.GetEndPointFromName(apiCallConfig.InstanceID) + "/dav/"
 
-	connString = buildConnectionString()
-	if connString == "" {
-		hornbillHelpers.Logger(4, "Database Connection String Empty. Check the SQLConf section of your configuration.", true, logFile)
-		return
-	}
+	if !configSkipInsert {
+		connString = buildConnectionString()
+		if connString == "" {
+			hornbillHelpers.Logger(4, "Database Connection String Empty. Check the SQLConf section of your configuration.", true, logFile)
+			return
+		}
 
-	if configDebug {
-		hornbillHelpers.Logger(1, "Database Server: "+apiCallConfig.Database.Server, false, logFile)
-		hornbillHelpers.Logger(1, "Database Port: "+strconv.Itoa(apiCallConfig.Database.Port), false, logFile)
-		hornbillHelpers.Logger(1, "Database Driver: "+apiCallConfig.Database.Driver, false, logFile)
-		hornbillHelpers.Logger(1, "Database Encryption: "+fmt.Sprintf("%v", apiCallConfig.Database.Encrypt), false, logFile)
-		hornbillHelpers.Logger(1, "Database Server Authentication: "+apiCallConfig.Database.Authentication, false, logFile)
-		hornbillHelpers.Logger(1, "Database: "+apiCallConfig.Database.Database, false, logFile)
-		hornbillHelpers.Logger(1, "Database Connection String: "+connString, false, logFile)
+		if configDebug {
+			hornbillHelpers.Logger(1, "Database Server: "+apiCallConfig.Database.Server, false, logFile)
+			hornbillHelpers.Logger(1, "Database Port: "+strconv.Itoa(apiCallConfig.Database.Port), false, logFile)
+			hornbillHelpers.Logger(1, "Database Driver: "+apiCallConfig.Database.Driver, false, logFile)
+			hornbillHelpers.Logger(1, "Database Encryption: "+fmt.Sprintf("%v", apiCallConfig.Database.Encrypt), false, logFile)
+			hornbillHelpers.Logger(1, "Database Server Authentication: "+apiCallConfig.Database.Authentication, false, logFile)
+			hornbillHelpers.Logger(1, "Database: "+apiCallConfig.Database.Database, false, logFile)
+			hornbillHelpers.Logger(1, "Database Connection String: "+connString, false, logFile)
+		}
 	}
 	//Run and get report content
 	for _, definition := range apiCallConfig.Reports {
@@ -172,7 +175,7 @@ func getReportContent(reportOutput paramsReportStruct, espXmlmc *apiLib.XmlmcIns
 		if v.Type == "csv" {
 			var counters counterStruct
 			reportFile := getFile(reportOutput.ReportRun, v, espXmlmc, report)
-			if reportFile != "" {
+			if reportFile != "" && !configSkipInsert {
 				success, csvMap := getRecordsFromCSV(reportFile)
 				if success {
 					totalRecords := len(csvMap)

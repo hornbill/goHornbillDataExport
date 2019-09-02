@@ -3,22 +3,23 @@ package main
 import apiLib "github.com/hornbill/goApiLib"
 
 const (
-	version  = "1.4.1"
+	version  = "1.5.0"
 	toolName = "Hornbill Data Export Tool"
 )
 
 var (
-	apiCallConfig  apiCallStruct
-	boolConfLoaded bool
-	configDebug    bool
-	configFileName string
-	configVersion  bool
-	configTimeout  int
-	connString     string
-	davEndpoint    string
-	espXmlmc       *apiLib.XmlmcInstStruct
-	logFile        string
-	timeNow        string
+	apiCallConfig    apiCallStruct
+	boolConfLoaded   bool
+	configDebug      bool
+	configFileName   string
+	configVersion    bool
+	configTimeout    int
+	configSkipInsert bool
+	connString       string
+	davEndpoint      string
+	espXmlmc         *apiLib.XmlmcInstStruct
+	logFile          string
+	timeNow          string
 )
 
 type counterStruct struct {
