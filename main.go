@@ -253,6 +253,7 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 	duration := time.Second * time.Duration(configTimeout)
 
 	var netTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
 			Timeout: duration,
 		}).Dial,

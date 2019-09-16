@@ -3,7 +3,7 @@ package main
 import apiLib "github.com/hornbill/goApiLib"
 
 const (
-	version  = "1.5.0"
+	version  = "1.5.1"
 	toolName = "Hornbill Data Export Tool"
 )
 

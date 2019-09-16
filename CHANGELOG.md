@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.5.1 (16th September, 2019)
+
+Defects Fixed:
+
+- Fixed issue with proxy not being used to download CSV file
+
 ## 1.5.0 (2nd September, 2019)
 
 Changes:
