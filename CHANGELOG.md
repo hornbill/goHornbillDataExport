@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.6.0 (13th November, 2020)
+
+Features:
+
+- Added support for exporting and using data from XLSX files from Hornbill Reports
+
 ## 1.5.1 (16th September, 2019)
 
 Defects Fixed:

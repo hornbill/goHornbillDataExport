@@ -3,7 +3,7 @@ package main
 import apiLib "github.com/hornbill/goApiLib"
 
 const (
-	version  = "1.5.1"
+	version  = "1.6.0"
 	toolName = "Hornbill Data Export Tool"
 )
 
@@ -49,6 +49,7 @@ type reportStruct struct {
 	ReportName            string
 	DeleteReportInstance  bool
 	DeleteReportLocalFile bool
+	UseXLSX               bool
 	Table                 dbConfigStruct
 }
 

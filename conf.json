@@ -13,10 +13,11 @@
     },
     "Reports":[
         {
-            "ReportID":0,
+            "ReportID":6,
             "ReportName":"",
             "DeleteReportInstance": true,
-            "DeleteReportLocalFile": true,
+            "DeleteReportLocalFile": false,
+            "UseXLSX": false,
             "Table":{
                 "TableName":"h_itsm_requests",
                 "PrimaryKey":"h_pk_reference",

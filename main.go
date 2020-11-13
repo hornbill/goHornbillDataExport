@@ -172,44 +172,53 @@ func checkReport(runID int, espXmlmc *apiLib.XmlmcInstStruct) (bool, bool, param
 
 func getReportContent(reportOutput paramsReportStruct, espXmlmc *apiLib.XmlmcInstStruct, report reportStruct) {
 	for _, v := range reportOutput.Files {
-		if v.Type == "csv" {
-			var counters counterStruct
-			reportFile := getFile(reportOutput.ReportRun, v, espXmlmc, report)
-			if reportFile != "" && !configSkipInsert {
-				success, csvMap := getRecordsFromCSV(reportFile)
-				if success {
-					totalRecords := len(csvMap)
-					if totalRecords == 0 {
-						hornbillHelpers.Logger(3, "No records found within "+v.Name+"...", true, logFile)
-					} else {
-						hornbillHelpers.Logger(3, "Processing "+strconv.Itoa(totalRecords)+" Records from "+v.Name+"...", true, logFile)
-						bar := pb.StartNew(totalRecords)
-						for _, reportRow := range csvMap {
-							upsertRecord(reportRow, report, &counters)
-							bar.Increment()
-						}
-						bar.Finish()
-						hornbillHelpers.Logger(3, "Processing Complete", true, logFile)
-						hornbillHelpers.Logger(3, "====Report Processing Statistics====", true, logFile)
-						hornbillHelpers.Logger(3, " * "+report.ReportName+" ["+strconv.Itoa(report.ReportID)+"]", true, logFile)
-						hornbillHelpers.Logger(3, " * Total Records Found: "+strconv.Itoa(totalRecords), true, logFile)
-						hornbillHelpers.Logger(3, " * Rows Affected: "+strconv.Itoa(counters.rowsaffected), true, logFile)
-						hornbillHelpers.Logger(3, " * Successful Queries: "+strconv.Itoa(counters.success), true, logFile)
+		var counters counterStruct
+		reportFile := ""
+		if !report.UseXLSX && v.Type == "csv" {
+			reportFile = getFile(reportOutput.ReportRun, v, espXmlmc, report)
+		} else if report.UseXLSX && v.Type == "xlsx" {
+			reportFile = getFile(reportOutput.ReportRun, v, espXmlmc, report)
+		}
+		if reportFile != "" && !configSkipInsert {
+			success := false
+			var csvMap []map[string]string
+			if report.UseXLSX {
+				success, csvMap = getRecordsFromXLSX(reportFile)
+			} else {
+				success, csvMap = getRecordsFromCSV(reportFile)
+			}
+			if success {
+				totalRecords := len(csvMap)
+				if totalRecords == 0 {
+					hornbillHelpers.Logger(3, "No records found within "+v.Name+"...", true, logFile)
+				} else {
+					hornbillHelpers.Logger(3, "Processing "+strconv.Itoa(totalRecords)+" Records from "+v.Name+"...", true, logFile)
+					bar := pb.StartNew(totalRecords)
+					for _, reportRow := range csvMap {
+						upsertRecord(reportRow, report, &counters)
+						bar.Increment()
+					}
+					bar.Finish()
+					hornbillHelpers.Logger(3, "Processing Complete", true, logFile)
+					hornbillHelpers.Logger(3, "====Report Processing Statistics====", true, logFile)
+					hornbillHelpers.Logger(3, " * "+report.ReportName+" ["+strconv.Itoa(report.ReportID)+"]", true, logFile)
+					hornbillHelpers.Logger(3, " * Total Records Found: "+strconv.Itoa(totalRecords), true, logFile)
+					hornbillHelpers.Logger(3, " * Rows Affected: "+strconv.Itoa(counters.rowsaffected), true, logFile)
+					hornbillHelpers.Logger(3, " * Successful Queries: "+strconv.Itoa(counters.success), true, logFile)
 
-						failedQueryOutput := " * Failed Queries: " + strconv.Itoa(counters.failed)
-						if counters.failed > 0 {
-							hornbillHelpers.Logger(3, failedQueryOutput, false, logFile)
-							color.Red(failedQueryOutput)
-						} else {
-							hornbillHelpers.Logger(3, failedQueryOutput, true, logFile)
-						}
+					failedQueryOutput := " * Failed Queries: " + strconv.Itoa(counters.failed)
+					if counters.failed > 0 {
+						hornbillHelpers.Logger(3, failedQueryOutput, false, logFile)
+						color.Red(failedQueryOutput)
+					} else {
+						hornbillHelpers.Logger(3, failedQueryOutput, true, logFile)
 					}
 				}
-				if report.DeleteReportLocalFile {
-					deleteFile(reportFile)
-				}
-
 			}
+			if report.DeleteReportLocalFile {
+				deleteFile(reportFile)
+			}
+
 		}
 	}
 }
@@ -232,12 +241,12 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 	reportPath := path.Join(reportsFolder, file.Name)
 	out, err := os.Create(reportPath)
 	if err != nil {
-		hornbillHelpers.Logger(4, "CSV File Creation Failed: "+fmt.Sprintf("%v", err), true, logFile)
+		hornbillHelpers.Logger(4, file.Name+" Report File Creation Failed: "+fmt.Sprintf("%v", err), true, logFile)
 		return ""
 	}
 	defer out.Close()
 
-	reportURL := davEndpoint + "reports/" + strconv.Itoa(reportRun.ReportID) + "/" + reportRun.CSVLink
+	reportURL := davEndpoint + "reports/" + strconv.Itoa(reportRun.ReportID) + "/" + file.Name
 	hornbillHelpers.Logger(3, "Report File URL: "+reportURL, false, logFile)
 
 	req, err := http.NewRequest("GET", reportURL, nil)
