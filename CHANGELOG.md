@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.7.0 (17th May, 2021)
+
+Changes:
+
+- Updated for compatibility with Go 1.16.x to fix issue when running in a Docker container on Windows
+- Updated Excel module to v2.4
+
 ## 1.6.0 (13th November, 2020)
 
 Features:
