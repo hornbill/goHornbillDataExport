@@ -1,6 +1,6 @@
 {
-    "APIKey": "yourapikey",
-    "InstanceID": "yourinstanceid",
+    "APIKey": "74129489ee524348b5abacbdef074aea",
+    "InstanceID": "joshuahdev",
     "Database":{
         "Driver": "mysql",
         "Server": "127.0.0.1",
@@ -13,11 +13,11 @@
     },
     "Reports":[
         {
-            "ReportID":6,
-            "ReportName":"",
-            "DeleteReportInstance": true,
+            "ReportID":1,
+            "ReportName":"Testing",
+            "DeleteReportInstance": false,
             "DeleteReportLocalFile": false,
-            "UseXLSX": false,
+            "UseXLSX": true,
             "Table":{
                 "TableName":"h_itsm_requests",
                 "PrimaryKey":"h_pk_reference",

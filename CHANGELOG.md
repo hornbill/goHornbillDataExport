@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.8.0 (February 22nd 2023)
+
+Change:
+
+- Complied with latest Go binaries because of security advisory.
+
 ## 1.7.1 (5th July, 2021)
 
 Fixes:
@@ -13,13 +19,13 @@ Changes:
 - Updated for compatibility with Go 1.16.x to fix issue when running in a Docker container on Windows
 - Updated Excel module to v2.4
 
-## 1.6.0 (13th November, 2020)
+##ï¿½1.6.0 (13th November, 2020)
 
 Features:
 
 - Added support for exporting and using data from XLSX files from Hornbill Reports
 
-## 1.5.1 (16th September, 2019)
+##ï¿½1.5.1 (16th September, 2019)
 
 Defects Fixed:
 
@@ -31,7 +37,7 @@ Changes:
 
 - Added the ability to skip inserts/updates of report records into database
 
-## 1.4.1 (6th August, 2019)
+##ï¿½1.4.1 (6th August, 2019)
 
 Changes:
 
