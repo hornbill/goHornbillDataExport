@@ -7,10 +7,9 @@ import (
 	"strings"
 
 	hornbillHelpers "github.com/hornbill/goHornbillHelpers"
-	"github.com/jmoiron/sqlx"
 )
 
-//buildConnectionString -- Build the connection string for the SQL driver
+// buildConnectionString -- Build the connection string for the SQL driver
 func buildConnectionString() string {
 	connectString := ""
 	if apiCallConfig.Database.Database == "" ||
@@ -151,21 +150,6 @@ func processColumnName(columnName string) string {
 }
 
 func doesRecordExist(reportRecord map[string]string, report reportStruct) bool {
-	//DB connection
-	var dberr error
-	db, dberr := sqlx.Open(apiCallConfig.Database.Driver, connString)
-	if dberr != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Connection Error: "+fmt.Sprintf("%v", dberr), true, logFile)
-		return false
-	}
-	defer db.Close()
-	//Check connection is open
-	dberr = db.Ping()
-	if dberr != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Ping Error: "+fmt.Sprintf("%v", dberr), true, logFile)
-		return false
-	}
-	hornbillHelpers.Logger(3, "[DATABASE] Connection Successful", false, logFile)
 	pkVal := ""
 	//Get primary key column value from report data
 	for repCol, dbCol := range report.Table.Mapping {
@@ -184,8 +168,8 @@ func doesRecordExist(reportRecord map[string]string, report reportStruct) bool {
 	return (err == nil)
 }
 
-//upsertRecord -- Query Asset Database for assets of current type
-//-- Builds map of assets, returns true if successful
+// upsertRecord -- Query Asset Database for assets of current type
+// -- Builds map of assets, returns true if successful
 func upsertRecord(reportRecord map[string]string, report reportStruct, counters *counterStruct) {
 	namedData := make(map[string]interface{})
 	sqlQuery := ""
@@ -207,12 +191,13 @@ func upsertRecord(reportRecord map[string]string, report reportStruct, counters 
 		counters.failed++
 		hornbillHelpers.Logger(4, "Unable to map any values from the returned record:", false, logFile)
 		jsonRecord, _ := json.Marshal(reportRecord)
-		hornbillHelpers.Logger(3, "[RECORD] "+fmt.Sprintf("%s", jsonRecord), false, logFile)
+		hornbillHelpers.Logger(3, "[RECORD] "+string(jsonRecord), false, logFile)
 		jsonMapping, _ := json.Marshal(report.Table.Mapping)
 		hornbillHelpers.Logger(3, "[MAPPINGS] "+string(jsonMapping), false, logFile)
 
 		return
 	}
+
 	if configDebug {
 		//Add query & params to log
 		hornbillHelpers.Logger(3, "[DATABASE] Query:"+sqlQuery, false, logFile)
@@ -220,21 +205,6 @@ func upsertRecord(reportRecord map[string]string, report reportStruct, counters 
 		for k, v := range namedData {
 			hornbillHelpers.Logger(3, "[DATABASE] :"+k+" = "+fmt.Sprintf("%v", v), false, logFile)
 		}
-	}
-
-	//DB connection
-	var dberr error
-	db, dberr := sqlx.Open(apiCallConfig.Database.Driver, connString)
-	if dberr != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Connection Error: "+fmt.Sprintf("%v", dberr), true, logFile)
-		return
-	}
-	defer db.Close()
-	//Check connection is open
-	dberr = db.Ping()
-	if dberr != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Ping Error: "+fmt.Sprintf("%v", dberr), true, logFile)
-		return
 	}
 
 	results, err := db.NamedExec(sqlQuery, namedData)

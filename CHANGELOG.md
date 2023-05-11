@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.9.0
+
+Changes:
+
+- Shared the DB connection as global, to prevent multiple db connections from being opened simultaneously
+- Fixed a few linter errors
+
 ## 1.8.0 (February 22nd 2023)
 
 Change:
@@ -25,7 +32,7 @@ Features:
 
 - Added support for exporting and using data from XLSX files from Hornbill Reports
 
-##�1.5.1 (16th September, 2019)
+## 1.5.1 (16th September, 2019)
 
 Defects Fixed:
 
@@ -37,7 +44,7 @@ Changes:
 
 - Added the ability to skip inserts/updates of report records into database
 
-##�1.4.1 (6th August, 2019)
+## 1.4.1 (6th August, 2019)
 
 Changes:
 

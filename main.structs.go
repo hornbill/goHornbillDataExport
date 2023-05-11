@@ -1,9 +1,12 @@
 package main
 
-import apiLib "github.com/hornbill/goApiLib"
+import (
+	apiLib "github.com/hornbill/goApiLib"
+	"github.com/jmoiron/sqlx"
+)
 
 const (
-	version  = "1.8.0"
+	version  = "1.9.0"
 	toolName = "Hornbill Data Export Tool"
 )
 
@@ -19,7 +22,7 @@ var (
 	davEndpoint      string
 	espXmlmc         *apiLib.XmlmcInstStruct
 	logFile          string
-	timeNow          string
+	db               *sqlx.DB
 )
 
 type counterStruct struct {

@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -20,6 +19,7 @@ import (
 	apiLib "github.com/hornbill/goApiLib"
 	hornbillHelpers "github.com/hornbill/goHornbillHelpers"
 	"github.com/hornbill/pb"
+	"github.com/jmoiron/sqlx"
 
 	//SQL Drivers
 	_ "github.com/denisenkom/go-mssqldb" //Microsoft SQL Server driver - v2005+
@@ -27,7 +27,6 @@ import (
 )
 
 func main() {
-	timeNow = time.Now().Format("2006-01-02 15:04:05")
 	logFile = "dataexport_" + time.Now().Format("20060102150405") + ".log"
 	flag.StringVar(&configFileName, "file", "conf.json", "Name of the configuration file to load")
 	flag.IntVar(&configTimeout, "timeout", 30, "The number of seconds to allow the CSV retrieval to wait before timing out")
@@ -76,6 +75,22 @@ func main() {
 			hornbillHelpers.Logger(1, "Database Connection String: "+connString, false, logFile)
 		}
 	}
+
+	// Create global DB connection
+	var dberr error
+	db, dberr = sqlx.Open(apiCallConfig.Database.Driver, connString)
+	if dberr != nil {
+		hornbillHelpers.Logger(4, " [DATABASE] Connection Error: "+fmt.Sprintf("%v", dberr), true, logFile)
+		return
+	}
+	defer db.Close()
+	//Check connection is open
+	dberr = db.Ping()
+	if dberr != nil {
+		hornbillHelpers.Logger(4, " [DATABASE] Ping Error: "+fmt.Sprintf("%v", dberr), true, logFile)
+		return
+	}
+
 	//Run and get report content
 	for _, definition := range apiCallConfig.Reports {
 		runReport(definition, espXmlmc)
@@ -284,7 +299,7 @@ func getFile(reportRun reportRunStruct, file reportFileStruct, espXmlmc *apiLib.
 	//-- Check for HTTP Response
 	if resp.StatusCode != 200 {
 		hornbillHelpers.Logger(4, fmt.Sprintf("Invalid HTTP Response: %d", resp.StatusCode), true, logFile)
-		io.Copy(ioutil.Discard, resp.Body)
+		io.Copy(io.Discard, resp.Body)
 		return ""
 	}
 
@@ -332,7 +347,7 @@ func deleteReportInstance(runID int) {
 	}
 }
 
-//loadConfig -- Function to Load Configruation File
+// loadConfig -- Function to Load Configruation File
 func loadConfig() (apiCallStruct, bool) {
 	boolLoadConf := true
 	//-- Check Config File File Exists

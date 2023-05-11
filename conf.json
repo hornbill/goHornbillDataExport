@@ -1,10 +1,10 @@
 {
-    "APIKey": "74129489ee524348b5abacbdef074aea",
-    "InstanceID": "joshuahdev",
+    "APIKey": "yourapikey",
+    "InstanceID": "yourinstanceid",
     "Database":{
         "Driver": "mysql",
         "Server": "127.0.0.1",
-        "Database": "hornbillbackup",
+        "Database": "somedatabase",
         "Authentication": "",
         "UserName": "root",
         "Password": "",
@@ -17,15 +17,13 @@
             "ReportName":"Testing",
             "DeleteReportInstance": false,
             "DeleteReportLocalFile": false,
-            "UseXLSX": true,
+            "UseXLSX": false,
             "Table":{
                 "TableName":"h_itsm_requests",
                 "PrimaryKey":"h_pk_reference",
                 "Mapping":{
                     "RequestID":"h_pk_reference",
-                    "DateLogged":"h_datelogged",
-                    "LastUpdate":"h_datelastmodified",
-                    "Summary":"h_summary"
+                    "Language":"h_summary"
                 }
             }
         }
