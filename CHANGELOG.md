@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.9.1
+
+Fixes:
+
+- The skipdb option does now not require a DB to be configured
+
 ## 1.9.0
 
 Changes:

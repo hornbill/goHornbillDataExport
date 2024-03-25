@@ -74,21 +74,22 @@ func main() {
 			hornbillHelpers.Logger(1, "Database: "+apiCallConfig.Database.Database, false, logFile)
 			hornbillHelpers.Logger(1, "Database Connection String: "+connString, false, logFile)
 		}
-	}
+		
+		// Create global DB connection
+		var dberr error
+		db, dberr = sqlx.Open(apiCallConfig.Database.Driver, connString)
+		if dberr != nil {
+			hornbillHelpers.Logger(4, " [DATABASE] Connection Error: "+fmt.Sprintf("%v", dberr), true, logFile)
+			return
+		}
+		defer db.Close()
+		//Check connection is open
+		dberr = db.Ping()
+		if dberr != nil {
+			hornbillHelpers.Logger(4, " [DATABASE] Ping Error: "+fmt.Sprintf("%v", dberr), true, logFile)
+			return
+		}
 
-	// Create global DB connection
-	var dberr error
-	db, dberr = sqlx.Open(apiCallConfig.Database.Driver, connString)
-	if dberr != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Connection Error: "+fmt.Sprintf("%v", dberr), true, logFile)
-		return
-	}
-	defer db.Close()
-	//Check connection is open
-	dberr = db.Ping()
-	if dberr != nil {
-		hornbillHelpers.Logger(4, " [DATABASE] Ping Error: "+fmt.Sprintf("%v", dberr), true, logFile)
-		return
 	}
 
 	//Run and get report content
